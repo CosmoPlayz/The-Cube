@@ -1,0 +1,928 @@
+var wasd = ["W","A","S","D"];
+var deaths = 0;
+var playX = [];
+var playY = [];
+var gravity = 2/1.8;
+var recX = [];
+var recY = [];
+var transition = -1;
+var run = 0;
+var load = 0;
+var clicked = false, hover = false;
+var clicked = false;
+var loaded = 0;
+var screen = 'logo';
+var circleSize = 0;
+var x = 0;
+var x2 = 0;
+var y = 600;
+var font = createFont("script");
+var maps = [
+/* 
+
+0 - nothing
+1 - block
+2 - lava
+3 - advance to next level
+4 - fake
+5 - trampoline
+6 and beyond is nothing.
+
+*/
+
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,1,0,0,1,0,0,1,0,0,0,
+0,0,1,0,0,1,0,0,1,0,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3,
+0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,1,0,0,
+0,0,0,0,0,0,0,0,0,1,0,0,
+0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,1,0,0,
+0,0,0,0,0,0,0,0,2,1,2,0,
+0,0,0,0,0,1,0,0,2,1,2,0,
+0,0,0,0,2,1,2,0,2,1,2,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,1,0,0,0,0,0,
+0,0,0,0,1,1,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,1,
+1,0,0,0,1,1,0,0,0,0,0,0,
+0,0,0,0,0,1,0,2,2,2,2,1,
+0,0,1,0,1,1,0,1,1,0,0,0,
+1,0,0,0,0,1,0,2,0,0,0,3,
+0,0,1,2,2,1,0,0,0,0,0,1,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,4,0,0,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,0,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,
+0,0,0,1,0,0,0,0,0,0,0,3,
+1,1,5,1,5,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,4,0,
+0,0,0,1,0,1,0,1,0,0,1,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,1,1,1,1,1,0,0,0,1,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,0,0,0,0,0,0,1,1,1,0,
+0,0,0,0,0,0,1,0,1,0,0,0,
+0,0,0,0,1,0,1,0,1,0,0,0,
+0,0,1,2,1,2,1,2,1,3,4,4,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,1,2,2,2,2,2,
+0,0,0,0,0,1,1,1,1,4,4,4,
+0,0,0,0,1,1,1,1,1,4,1,4,
+0,0,0,1,4,4,4,4,1,4,4,4,
+0,0,4,4,4,1,1,4,1,4,1,4,
+0,1,1,1,4,4,1,4,4,4,1,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,1,4,4,4,4,4,4,0,0,
+0,0,1,1,4,4,4,4,4,4,1,0,
+0,1,1,2,2,2,2,2,2,4,1,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,1,2,4,2,1,2,1,2,1,4,
+1,0,0,0,0,0,0,0,0,0,1,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+2,1,2,1,2,4,2,1,0,0,1,0,
+0,0,0,0,0,0,0,0,1,0,1,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,1,2,1,2,1,2,1,2,1,2,0,
+0,2,2,2,2,2,2,2,2,2,2,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,1,4,
+2,2,2,1,2,2,4,2,2,1,2,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,0,1,5,1,5,1,5,1,1,4,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,4,1,4,1,4,1,4,1,0,0,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,1,1,1,1,1,1,1,1,1,4,
+0,2,2,2,2,2,2,2,2,2,2,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,1,0,0,
+0,0,1,0,0,0,0,0,0,2,0,2,
+0,0,0,0,0,2,0,0,0,2,0,2,
+1,1,0,0,0,1,0,0,0,2,0,2,
+0,4,1,1,1,4,4,1,4,4,1,4,
+1,0,0,0,0,0,0,2,0,0,3,0,
+1,1,1,1,1,1,5,1,1,1,1,1],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,4,1,
+0,0,0,0,0,0,0,1,0,0,0,1,
+1,1,1,1,1,4,1,1,0,0,0,1,
+0,0,0,0,0,0,0,1,0,0,0,1,
+4,1,1,1,1,1,0,4,0,0,0,1,
+0,0,0,0,0,1,0,1,4,1,1,1,
+1,0,0,0,0,1,0,1,0,4,4,4,
+0,0,1,0,0,1,0,1,0,4,1,4,
+0,0,0,0,0,1,0,1,0,1,1,4,
+0,0,0,0,1,1,0,1,0,1,1,3,
+1,1,1,1,1,1,0,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,1,0,0,0,3,
+0,0,0,0,0,0,0,1,0,0,0,0,
+1,0,4,0,0,0,0,1,0,0,0,0,
+1,0,1,0,0,0,0,1,0,0,0,0,
+4,0,0,0,0,0,0,1,0,0,0,0,
+4,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,0,0,1,0,0,0,0,
+1,0,0,0,0,0,0,1,0,0,0,0,
+4,0,0,0,0,0,0,1,0,0,0,0,
+4,0,0,1,0,0,0,1,0,0,0,0,
+0,2,2,2,2,2,2,2,2,2,2,2,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,1,1,0,0,0,0,0,
+1,0,0,0,0,1,1,0,0,0,0,0,
+0,0,0,0,0,1,1,0,0,0,0,0,
+0,0,0,1,0,1,1,0,0,0,0,0,
+0,0,0,0,0,4,1,0,0,0,0,0,
+1,0,0,0,0,4,1,0,0,0,0,0,
+0,0,0,0,0,4,1,0,0,0,0,0,
+0,0,0,0,0,1,1,0,0,0,0,0,
+0,0,0,0,0,4,1,0,0,0,0,0,
+0,0,1,1,4,4,4,1,1,1,0,0,
+0,1,1,1,4,4,4,4,1,1,1,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,3,
+0,0,0,0,0,0,0,0,1,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,1,1,4,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,1,0,0,1,0,0,1,0,0,0,
+0,0,1,0,0,1,0,0,1,0,0,0,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,2,2,0,0,0,0,3,
+0,0,0,0,0,2,2,0,0,0,0,0,
+0,0,0,0,0,2,2,0,0,0,0,0,
+0,0,5,0,0,2,2,0,0,5,0,0,
+0,0,0,0,0,2,2,0,0,0,0,0,
+0,0,0,0,0,2,2,0,0,0,0,0,
+5,0,0,0,0,2,2,0,0,0,0,5,
+0,0,0,0,0,2,2,0,0,0,0,0,
+0,0,0,0,0,2,2,0,0,0,0,0,
+0,0,1,4,5,2,2,5,4,1,0,0,
+0,1,1,4,4,4,4,4,4,1,1,0,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,3,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+5,5,5,5,5,5,5,5,5,0,0,0,
+1,1,1,1,1,1,1,1,1,1,0,0,
+0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,5,5,5,5,5,5,5,5,5,5,
+0,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,1,4,1,1,1,1,1,1,1,
+0,0,0,1,0,1,0,1,0,1,0,0,
+1,4,0,1,0,4,0,1,0,4,0,0,
+0,4,0,1,0,1,0,1,0,1,0,0,
+0,1,0,1,0,1,0,4,0,1,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,1,1,2,2,2,2,2,2,2,0,0,
+0,0,1,2,2,2,0,0,0,0,0,0,
+1,0,1,2,2,2,0,0,0,0,1,0,
+0,0,1,0,0,0,0,0,1,2,2,2,
+0,1,1,0,0,0,1,0,2,0,0,2,
+0,0,1,2,2,2,2,0,2,0,0,0,
+1,0,1,2,2,2,2,0,2,2,2,0,
+0,0,1,2,2,2,2,0,2,2,2,0,
+0,1,1,2,2,2,2,4,4,4,4,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,2,2,2,
+0,0,0,0,0,0,0,0,0,2,2,2,
+0,0,1,1,0,1,0,0,0,1,1,1,
+0,0,0,1,0,1,0,0,0,1,0,0,
+1,0,0,1,0,1,0,2,2,1,0,0,
+0,0,0,1,0,1,0,0,0,1,0,0,
+0,0,1,1,5,1,0,0,0,1,0,0,
+0,0,0,1,5,1,0,0,0,1,0,0,
+1,0,0,1,5,1,0,0,0,1,0,0,
+0,0,0,1,5,1,2,2,0,1,0,0,
+0,0,1,1,5,1,0,0,0,4,0,3,
+1,1,1,1,1,1,1,1,1,1,4,4
+],
+[
+0,0,0,1,2,2,2,4,0,4,0,0,
+0,0,1,1,0,0,0,4,0,1,1,4,
+1,0,0,1,2,2,2,1,0,0,0,0,
+0,0,0,1,0,0,0,4,0,0,4,1,
+0,0,1,1,2,2,2,4,0,5,0,0,
+1,0,0,1,0,0,0,4,0,1,0,0,
+0,0,0,4,4,4,2,1,0,1,1,4,
+0,0,1,1,0,0,0,1,0,0,0,0,
+1,0,0,1,4,2,2,1,0,1,4,1,
+0,0,0,1,0,0,0,4,0,1,0,0,
+0,0,1,1,0,0,0,4,5,1,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+],
+[
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,3,
+1,1,1,1,1,1,1,1,1,1,1,1
+]];
+var messages = ['Hi, I am Blue, use the arrow keys or WASD to make me move \n and get to the purple thing to advance.','The up arrow key and the "W" key makes me jump', 'Hard?', 'Some easy parkour.', 'What are those red things?', 'Getting HARDER...', 'Too tall?', 'Is that a trampoline?', 'Good luck!', 'Wait, this is impossible...','Is this TOO easy?', 'Is this still easy?', 'Lets get to the hard stuff.', 'The all block level. This level \n is pretty hard and easy because of the blocks.', 'This level made by EKTan @KTan2014', 'Trapped in jail... and trapped in jail again... and goes on...\n Good luck finding your way out! :D', 'Finding a good tip... TIP DETECTED TIP IS: Think outside \n of the canvas and JUMP!', 'Only one way to cross this wall. And the solution is ↑→↓.', 'Not this again... wait, why is it up there?', 'I did not use the trampoline that much in this game...', 'Lets have a break... by bouncing on the trampolines!!! \n You can stay on this level as long as you want.', 'How do we get to the other side?', 'This does not look good.', 'The tunnel of doom.', 'Real messed up.', 'Nothing Here.'];
+var levelPos = {
+    x: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    y: [500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500,500]
+};
+var level = 0; 
+var loadV = 'load';
+var clicked = false;
+var sze = 600;
+var inRect = false;
+var xPos = 0, yPos = 0, findX = 0, findY = 0;
+var p = {
+    x: levelPos.x[level],
+    y: levelPos.y[level]
+}; 
+var bX = []; 
+var bY = []; 
+var lY = []; 
+var pX = []; 
+var pY = [];
+var tX = []; 
+var tY = []; 
+var lX = [];
+var t = false;
+var r = false;
+var l = false;
+var j = false;
+var termJ = false;
+var preY = p.y;
+var falling = 0;
+var kp = [];
+var y = 0;
+var onTramp = false;
+textAlign(CENTER, CENTER);
+for (var i = 0; i < maps.length; i++) {
+    bX.push([]);
+    bY.push([]);
+    lX.push([]);
+    lY.push([]);
+    pX.push([]);
+    pY.push([]);
+    tX.push([]);
+    tY.push([]);
+}
+var findBlock = function () {
+    for (var f = 0; f < maps.length; f++) {
+        findX = 0;
+        findY = 0;
+        for (var i = 0; i < maps[f].length; i++) {
+            if (maps[f][i] === 1) {
+                bX[f].push(findX);
+                bY[f].push(findY);
+            }
+            if (maps[f][i]===2) {
+                lX[f].push(findX);
+                lY[f].push(findY);
+            }
+            if (maps[f][i]===3) {
+                pX[f].push(findX);
+                pY[f].push(findY);
+            }
+            if (maps[f][i]===5) {
+                tX[f].push(findX);
+                tY[f].push(findY);
+            }
+            findX += sze/sqrt(maps[level].length);
+            if (findX >= sze) {
+                findX = 0;
+                findY += sze/sqrt(maps[level].length);
+            }
+        }
+    }
+};
+findBlock();
+var showMap = function () {
+    xPos = 0;
+    yPos = 0;
+    for (var i = 0; i < maps[level].length; i++) {
+        switch (maps[level][i]) {
+            case 0:
+                noFill();
+            break;
+            case 1:
+                fill(0, 200, 0);
+                rect(xPos, yPos, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+                fill(0, 0, 0, 10);
+                rect(xPos + sze/sqrt(maps[level].length)/2, yPos, sze/sqrt(maps[level].length)/2, sze/sqrt(maps[level].length));
+            break;
+            case 2:
+                fill(255, 0, 0);
+                rect(xPos, yPos, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+                fill(0, 0, 0, 10);
+                rect(xPos + sze/sqrt(maps[level].length)/2, yPos, sze/sqrt(maps[level].length)/2, sze/sqrt(maps[level].length));
+            break;
+            case 3:
+                fill(127.5, 0, 127.5);
+                rect(xPos, yPos, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+                fill(0, 0, 0, 10);
+                rect(xPos + sze/sqrt(maps[level].length)/2, yPos, sze/sqrt(maps[level].length)/2, sze/sqrt(maps[level].length));
+            break;
+            case 4:
+                fill(0, 195, 0);
+                rect(xPos, yPos, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+                fill(0, 0, 0, 10);
+                rect(xPos + sze/sqrt(maps[level].length)/2, yPos, sze/sqrt(maps[level].length)/2, sze/sqrt(maps[level].length));
+            break;
+            case 5:
+                fill(255, 3, 213);
+                rect(xPos, yPos, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+                fill(0, 0, 0, 10);
+                rect(xPos + sze/sqrt(maps[level].length)/2, yPos, sze/sqrt(maps[level].length)/2, sze/sqrt(maps[level].length));
+        }
+        xPos += sze/sqrt(maps[level].length);
+        if (xPos >= sze) {
+            xPos = 0;
+            yPos += sze/sqrt(maps[level].length);
+        }
+    }
+};
+var keyPressed = function () {
+    kp[keyCode] = true;
+    kp[key.toString().toUpperCase()] = true;
+};
+var keyReleased = function () {
+    kp[keyCode] = false;
+    kp[key.toString().toUpperCase()] = false;
+};
+mouseClicked = function(){
+    clicked = true;    
+};
+var updatePlayer = function () {
+    t = false;
+    r = false;
+    l = false;
+    termJ = false;
+    onTramp = false;
+    for (var i = 0; i < bX[level].length; i++) {
+        if (p.y >= bY[level][i] - sze/sqrt(maps[level].length) && p.y <= bY[level][i] && p.x > bX[level][i] - sze/sqrt(maps[level].length) && p.x < bX[level][i] + sze/sqrt(maps[level].length)) {
+            t = true;
+            if (j) {
+                termJ = true;
+            }
+        }
+        if (p.x === bX[level][i] - sze/sqrt(maps[level].length) && p.y > bY[level][i] - (sze/sqrt(maps[level].length)) + 1 && p.y < bY[level][i] + sze/sqrt(maps[level].length)) {
+            r = true;
+        }
+        if (p.x === bX[level][i] + sze/sqrt(maps[level].length) && p.y > bY[level][i] - (sze/sqrt(maps[level].length)) + 1 && p.y < bY[level][i] + sze/sqrt(maps[level].length)) {
+            l = true;
+        }
+        if (p.y <= bY[level][i] + sze/sqrt(maps[level].length) && p.y >= bY[level][i] + sze/sqrt(maps[level].length) - sze / 10/sqrt(maps[level].length) && p.x > bX[level][i] - sze/sqrt(maps[level].length) && p.x < bX[level][i] + sze/sqrt(maps[level].length)) {
+            termJ = true;
+        }
+    }
+    for (var i = 0; i < lX[level].length; i++) {
+        if (p.x > lX[level][i] - sze/sqrt(maps[level].length) && p.x < lX[level][i] + sze/sqrt(maps[level].length) && p.y > lY[level][i] - sze/sqrt(maps[level].length) && p.y < lY[level][i] + sze/sqrt(maps[level].length)) {
+            p.x = levelPos.x[level];
+            p.y = levelPos.y[level];
+            termJ = true;
+            falling = 0;
+            deaths++;
+            r = true;
+            l = true;
+            t = true;
+            y = 0;
+        }
+    }
+    for (var i = 0; i < pX[level].length; i++) {
+        if (p.x > pX[level][i] - sze/sqrt(maps[level].length) && p.x < pX[level][i] + sze/sqrt(maps[level].length) && p.y > pY[level][i] - sze/sqrt(maps[level].length) && p.y < pY[level][i] + sze/sqrt(maps[level].length)) {
+            p.x = levelPos.x[level + 1];
+            p.y = levelPos.y[level + 1];
+            level++;
+            termJ = true;
+            falling = 0;
+            r = true;
+            l = true;
+            t = true;
+            y = 0;
+        }
+    }
+    for (var i = 0; i < tX[level].length; i++) {
+        if (p.y >= tY[level][i] - sze/sqrt(maps[level].length) && p.y <= tY[level][i] && p.x > tX[level][i] - sze/sqrt(maps[level].length) && p.x < tX[level][i] + sze/sqrt(maps[level].length)) {
+            t = true;
+            if (j) {
+                termJ = true;
+            }
+            onTramp = true;
+        }
+        if (p.x === tX[level][i] - sze/sqrt(maps[level].length) && p.y > tY[level][i] - (sze/sqrt(maps[level].length)) + 1 && p.y < tY[level][i] + sze/sqrt(maps[level].length)) {
+            r = true;
+        }
+        if (p.x === tX[level][i] + sze/sqrt(maps[level].length) && p.y > tY[level][i] - (sze/sqrt(maps[level].length)) + 1 && p.y < tY[level][i] + sze/sqrt(maps[level].length)) {
+            l = true;
+        }
+        if (p.y <= tY[level][i] + sze/sqrt(maps[level].length) && p.y >= tY[level][i] + sze/sqrt(maps[level].length) - sze / 10/sqrt(maps[level].length) && p.x > tX[level][i] - sze/sqrt(maps[level].length) && p.x < tX[level][i] + sze/sqrt(maps[level].length)) {
+            termJ = true;
+        }
+    }
+    if (p.y >= sze) {
+        p.x = levelPos.x[level];
+        p.y = levelPos.y[level];
+        termJ = true;
+        falling = 0;
+        deaths++;
+        r = true;
+        l = true;
+        t = true;
+        y = 0;
+    }
+    if (!t && !j) {
+        p.y+=falling;
+        falling+=0.1;
+    }
+    else {
+        falling = 0;
+    }
+    if (kp[UP] && t ) {
+        j = true;
+        preY = p.y;
+        if (!onTramp) {
+            y = -sze / 10/sqrt(maps[level].length);
+        }
+        else {
+            y = -sze / 7.5/sqrt(maps[level].length);
+        }
+    }
+    if (kp[wasd[0]] && t ) {
+        j = true;
+        preY = p.y;
+        if (!onTramp) {
+            y = -sze / 10/sqrt(maps[level].length);
+        }
+        else {
+            y = -sze / 7.5/sqrt(maps[level].length);
+        }
+    }
+    if (termJ) {
+        j = false;
+        y = 0;
+    }
+    if (j) {
+        p.y+=y;
+        y+=gravity/10;
+    }
+    if (p.y === preY && j) {
+        j = false;
+        falling = y;
+    }
+    if (kp[RIGHT] && !r && p.x < sze - sze/sqrt(maps[level].length)) {
+        p.x+=sze / 10/sqrt(maps[level].length);
+    }
+    if (kp[wasd[3]] && !r && p.x < sze - sze/sqrt(maps[level].length)) {
+        p.x+=sze / 10/sqrt(maps[level].length);
+    }
+    if (kp[LEFT] && !l && p.x > 0) {
+            p.x-=sze / 10/sqrt(maps[level].length);
+    }
+    if (kp[wasd[1]] && !l && p.x > 0) {
+        p.x-=sze / 10/sqrt(maps[level].length);
+    }
+    for (var i = 0; i < bX[level].length; i++) {
+        if (p.y > bY[level][i] - sze/sqrt(maps[level].length) && p.y <= bY[level][i] && p.x > bX[level][i] - sze/sqrt(maps[level].length) && p.x < bX[level][i] + sze/sqrt(maps[level].length)) {
+            p.y = bY[level][i] - sze/sqrt(maps[level].length);
+        }
+        if (p.y <= bY[level][i] + sze/sqrt(maps[level].length) && p.y >= bY[level][i] + sze/sqrt(maps[level].length) - sze / 10/sqrt(maps[level].length) && p.x > bX[level][i] - sze/sqrt(maps[level].length) && p.x < bX[level][i] + sze/sqrt(maps[level].length)) {
+            p.y = bY[level][i] + sze/sqrt(maps[level].length);
+        }
+    }
+    for (var i = 0; i < tX[level].length; i++) {
+        if (p.y > tY[level][i] - sze/sqrt(maps[level].length) && p.y <= tY[level][i] && p.x > tX[level][i] - sze/sqrt(maps[level].length) && p.x < tX[level][i] + sze/sqrt(maps[level].length)) {
+            p.y = tY[level][i] - sze/sqrt(maps[level].length);
+        }
+        if (p.y <= tY[level][i] + sze/sqrt(maps[level].length) && p.y >= tY[level][i] + sze/sqrt(maps[level].length) - sze / 10/sqrt(maps[level].length) && p.x > tX[level][i] - sze/sqrt(maps[level].length) && p.x < tX[level][i] + sze/sqrt(maps[level].length)) {
+            p.y = tY[level][i] + sze/sqrt(maps[level].length);
+        }
+    }
+};
+var logo = function() {
+    screen = 'logo';
+    background(0, 0, 0);
+    textAlign(CENTER, CENTER);
+    fill(255, 255, 255);
+    ellipse(x2, 300, circleSize, circleSize);
+    textSize(30);
+    
+    circleSize += 1;
+    x2 = x2 + 1;
+    
+    if (circleSize > 300) {
+        circleSize = 300;
+        fill(0, 0, 0);
+        x = x + 1;
+        y = y + 1;
+        textSize(35);
+        text('Cosmo Playz', 302, y);
+        textSize(30);
+        text('PRESENTS', x, 330);
+        if (x > 300) {
+            x = 300;
+        }
+        if (x2 > 300) {
+            x2 = 300;
+        }
+        if (y > 285) {
+            y = 285;
+        }
+    }
+    
+    if (mouseIsPressed&&mouseX > 456&&mouseX < 556&&mouseY > 36&&mouseY < 136) {
+        clicked = true;
+        screen = 'menu';
+    }
+    
+    fill(255, 255, 255);
+    rect(456, 36, 100, 100, 15);
+    pushMatrix();
+    translate(random(3),random(3));
+    fill(random(255), random(255), random(255));
+    text("Skip", 505, 84);
+    popMatrix();
+    
+    if (frameCount === 800) {
+        screen = 'menu';
+    }
+    
+};
+var button = function(x, y, w, h, txt, txtS, to, color) {
+    text(txt,x + w / 2, y + h / 2);
+        
+    if(mouseX > 190 && mouseY > 295 && mouseX < x + w && mouseY < y + h) {
+        fill(255, 255, 255);
+        rect(190, 370, 220, 100, 15);
+        fill(0, 0, 0);
+        text('PLAY', 300, 420);
+    if(mouseIsPressed){
+            screen = to;
+        }
+    }
+};
+var Menu = function() {
+    screen = 'menu';
+    noStroke();
+    background(0, 200, 255);
+    fill(0, 0, 0, 10);
+    rect(sze/2, 0, sze/2, sze);
+    showMap();
+    fill(0, 0, 0);
+    textSize(15);
+    text('©2019 Cosmo Playz', 500, 579);
+    fill(44, 3, 252);
+    rect(0, 500, 50, 50);
+    textSize(50);
+    fill(0, 0, 0);
+    text("THE\nCUBE",300,154);
+    textSize(25);
+    fill(0, 0, 0);
+    rect(190, 370, 220, 100, 15);
+    fill(255, 255, 255);
+    button(190,370,220,100,"PLAY",30,"Load",color(171, 171, 171));
+    textSize(30);
+    pushMatrix();
+    translate(random(3),random(3));
+    fill(random(255), random(255), random(255));
+    rotate(-30);
+    text("New!!!", 16, 196);
+    popMatrix();
+};
+var Load = function() {
+    screen = 'Load';
+    if (screen === 'Load') {
+        screen = 'Load';
+        background(0, 200, 255);
+        textAlign(CENTER, CENTER);
+        noStroke();
+        fill(0, 0, 0, 10);
+        rect(sze/2, 0, sze/2, sze);
+        rect(200, 300, 201, 31);
+        noStroke();
+        fill(0, 0, 0);
+        rect(200, 300, load*1.9, 30);
+        fill(0, 0, 0);
+        text("Loading Movements...\n" + floor(load) + "%", 305, 250);
+    if (load === 35) {
+        load -= 0.3;
+    }
+        load+=noise(loaded);
+        loaded+=0.005;
+    }
+    if (load === 0) {
+        loadV = 'Movements';
+    }
+    if (load === 25) {
+        loadV = 'Levels';
+    }
+    if (loadV === 'Movements') {
+        kp[keyCode] = true;
+        kp[key.toString().toUpperCase()] = true;
+    }
+    if (loadV === 'Levels') {
+        maps.length();
+    }
+    if (load >= 25) {
+        load -= 0.3;
+        background(0, 200, 255);
+        textAlign(CENTER, CENTER);
+        noStroke();
+        fill(0, 0, 0, 10);
+        rect(sze/2, 0, sze/2, sze);
+        rect(200, 300, 201, 31);
+        noStroke();
+        fill(0, 0, 0);
+        rect(200, 300, load*1.9, 30);
+        fill(0, 0, 0);
+        text("Loading Levels\n" + floor(load) + "%", 305, 250);
+    }
+    if (load >= 50) {
+        background(0, 200, 255);
+        textAlign(CENTER, CENTER);
+        noStroke();
+        fill(0, 0, 0, 10);
+        rect(sze/2, 0, sze/2, sze);
+        rect(200, 300, 201, 31);
+        noStroke();
+        fill(0, 0, 0);
+        rect(200, 300, load*1.9, 30);
+        fill(0, 0, 0);
+        text("Loading Mobile...\n" + floor(load) + "%", 305, 250);
+    }
+    if (load >= 55) {
+        load -= 0.1;
+    }
+    if (load >= 75) {
+        load += 0.2;
+        background(0, 200, 255);
+        textAlign(CENTER, CENTER);
+        noStroke();
+        fill(0, 0, 0, 10);
+        rect(sze/2, 0, sze/2, sze);
+        rect(200, 300, 201, 31);
+        noStroke();
+        fill(0, 0, 0);
+        rect(200, 300, load*1.9, 30);
+        fill(0, 0, 0);
+        text("Starting game...\n" + floor(load) + "%", 305, 250);
+    }
+    if (load >= 100) {
+        load = 0;
+        screen = 'play';
+    }
+    if (screen === 'play') {
+        background(0, 200, 255);
+        noStroke();
+        fill(0, 0, 0, 10);
+        rect(sze/2, 0, sze/2, sze);
+        showMap();
+        updatePlayer();
+        fill(44, 3, 252);
+        recX.push(p.x);
+        recY.push(p.y);
+        rect(p.x, p.y, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+    }
+};
+/*
+var Mobile = function() {
+    triangle(200, 158, 181, 135, 135, 143);
+};
+*/
+var draw = function() {
+    if (screen === "logo") {
+        logo();
+    }
+    if(screen === "menu") {
+        Menu();    
+    }
+    if (screen === "Load") {
+        Load();
+    }
+    if (screen === 'play') {
+        background(0, 200, 255);
+        noStroke();
+        fill(0, 0, 0, 10);
+        rect(sze/2, 0, sze/2, sze);
+        showMap();
+        updatePlayer();
+        fill(44, 3, 252);
+        recX.push(p.x);
+        recY.push(p.y);
+        rect(p.x, p.y, sze/sqrt(maps[level].length), sze/sqrt(maps[level].length));
+        /*
+        if (mouseX > 458&&mouseX < 576&&mouseY > 25&&mouseY < 71) {           
+            fill(255, 255, 255);
+            rect(458, 25, 118, 46, 15);
+            fill(0, 0, 0);
+            text('Mobile', 519, 51);
+            
+            if (mouseIsPressed) {
+                clicked = true;
+                screen = 'mobile';
+                if (screen === 'mobile') {
+                    Mobile();
+                }
+            }
+            
+        } 
+        else {
+            fill(0, 0, 0);
+            rect(458, 25, 118, 46, 15);
+            fill(255, 255, 255);
+            text('Mobile', 519, 51);
+        }
+        */
+    }
+    strokeWeight(3);
+    textAlign(CENTER, CENTER);
+    
+    if (playX[0] !== undefined) {
+        p.x = playX[run];
+        p.y = playY[run];
+        run++;
+    }
+    fill(0, 0, 0);
+    textFont(font, 21);
+    textSize(20);
+    if (screen === 'play') {
+        text('Deaths:', 300, 36);
+        text(deaths, 350, 36.5);
+        text('Level:', 49, 36);
+        text(level, 89, 36);
+    }
+    if (screen === 'play') {
+        text(messages[level], 300, 100);
+    }
+};
+
+
